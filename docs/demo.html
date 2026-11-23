@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel de Vendas e Faturamento</title>
+<style>
+:root{--fundo:#F3F3F1;--cartao:#FFFFFF;--borda:#E2E1DC;--grade:#ECEBE7;--texto:#0B0B0B;--sec:#52514E;--fraco:#8A8984;
+--bom:#0E7A28;--ruim:#C42B2B;--azul:#2A78D6;--azulc:#E8F0FB;--lic:#6250D6;--alerta:#FFF3D6;--alertat:#7A4B00}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fundo);color:var(--texto);font:14px/1.4 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+button{font:inherit;cursor:pointer}
+header{background:var(--cartao);border-bottom:1px solid var(--borda);padding:10px 20px}
+.l1{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px}
+.perbox{margin-left:auto;color:var(--sec);font-size:13px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.perbox[hidden]{display:none}
+.perbox select{min-width:0;font:inherit;font-weight:600;color:var(--texto);padding:6px 10px;border:1px solid var(--borda);border-radius:8px;background:var(--cartao);max-width:100%}
+@media(max-width:700px){.perbox{margin-left:0;width:100%}.perbox select{flex:1}}
+h1{font-size:22px;font-weight:600;margin:0;display:flex;gap:18px}
+h1 .ar{cursor:pointer;color:#A6ABB5;border-bottom:3px solid transparent;padding-bottom:2px}
+h1 .ar.on{color:var(--texto);border-bottom-color:var(--azul);cursor:default}
+h1 .ar:not(.on):hover{color:var(--sec)}
+nav{display:flex;gap:18px;margin-left:10px}
+nav button{border:0;background:transparent;color:var(--sec);padding:6px 2px;border-bottom:2px solid transparent;border-radius:0}
+nav button.on{color:var(--texto);font-weight:600;border-bottom-color:var(--texto)}
+.selo{padding:5px 4px;font-weight:600;font-size:12.5px;border:0;background:none}
+.selo.ok{color:var(--bom)}.selo.erro{background:#FBE6E6;color:var(--ruim);padding:5px 12px;border-radius:14px}
+.sub{color:var(--sec);font-size:12.5px;margin-top:4px}
+.alerta{background:var(--alerta);color:var(--alertat);font-weight:600;padding:8px 20px}
+main{padding:14px 24px 20px;max-width:1700px;margin:0 auto}
+.caixa{background:var(--cartao);border:1px solid var(--borda);border-radius:10px;padding:12px 16px}
+.filtros .lin{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.rot{color:var(--sec);margin-right:2px}
+.grupo{display:flex;align-items:center;gap:6px;margin-right:16px}
+.chip{border:1px solid var(--borda);background:#fff;border-radius:6px;padding:5px 12px;color:var(--texto)}
+.chip.on{color:#fff;font-weight:600}
+.vsel{position:relative}
+.sala .lin{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.vchip{display:inline-flex;align-items:center;gap:4px;background:#E8F0FB;color:#1B4F9C;border-radius:16px;padding:5px 6px 5px 12px;font-size:13px;font-weight:600}
+.vchip button{border:0;background:transparent;color:#1B4F9C;font-size:16px;line-height:1;cursor:pointer;padding:0 4px;border-radius:50%}
+.vchip button:hover{background:#cfe0f7}
+.ssel>button{border:1px dashed var(--borda);background:var(--cartao);border-radius:16px;padding:5px 12px;cursor:pointer;font:inherit;font-size:13px}
+.sec{color:var(--sec)}
+.sala{margin-bottom:12px}
+.vsel>button{border:1px solid var(--borda);background:#fff;border-radius:6px;padding:5px 12px;min-width:210px;text-align:left}
+.vsel>button.on{color:var(--azul);font-weight:600}
+.vmenu{position:absolute;z-index:10;top:36px;left:0;background:#fff;border:1px solid var(--borda);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);padding:6px;min-width:250px;max-height:340px;overflow:auto}
+.vmenu label{display:block;padding:5px 8px;border-radius:5px;cursor:pointer;white-space:nowrap}.vmenu label:hover{background:#F7F7F5}
+input[type=search]{font:inherit;padding:5px 9px;border:1px solid var(--borda);border-radius:6px;width:230px}
+.chk{color:var(--lic);display:flex;align-items:center;gap:5px;cursor:pointer;margin-right:16px}
+.limpar{color:var(--azul);text-decoration:underline;background:none;border:0;padding:0}
+.frase{background:#F7F7F5;border-radius:6px;padding:7px 12px;margin-top:10px;font-size:14.5px}
+.frase b{font-weight:600}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:12px 0}
+.card{background:var(--cartao);border:1px solid var(--borda);border-radius:10px;padding:10px 16px;position:relative}
+.card.clic{cursor:pointer}.card.apagado{color:var(--fraco)}.card.apagado .rot2,.card.apagado .det{color:var(--fraco)}
+.card .rot2{color:var(--sec);font-size:13px;display:flex;align-items:center;gap:6px}
+.card .val{font-size:21px;font-weight:600;margin:4px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .det{color:var(--sec);font-size:12px;padding-right:64px}
+.ponto{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
+.duas{display:grid;grid-template-columns:minmax(0,52fr) minmax(0,48fr);gap:16px}
+@media(max-width:1000px){.duas{grid-template-columns:minmax(0,1fr)}}
+.cab{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.cab h2{font-size:16px;font-weight:600;margin:0}.cab .exp{margin:2px 0 0}
+.exp{color:var(--sec);font-size:12.5px}
+.toggle{margin-left:auto;display:flex}.toggle button{border:1px solid var(--borda);background:#fff;padding:4px 12px;font-size:12.5px}
+.toggle button.on{background:var(--azul);border-color:var(--azul);color:#fff;font-weight:600}
+.legenda{display:flex;gap:14px;flex-wrap:wrap;color:var(--sec);font-size:12px;margin:2px 0 6px}
+.legenda span{display:flex;align-items:center;gap:5px}.legenda i{width:11px;height:11px;display:inline-block}
+.vl{display:grid;grid-template-columns:minmax(150px,38%) minmax(0,1fr) 64px;gap:10px;align-items:center;padding:6px 8px;border-radius:6px;cursor:pointer}
+.vl:hover{background:#F7F7F5}.vl.sel{background:var(--azulc)}.vl.sel .nm{color:var(--azul);font-weight:600}.vl.ap{opacity:.42}
+.vl .nm{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vl small{display:block;color:var(--sec);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trilho{display:flex;align-items:center;gap:8px;min-width:0}.seg{display:flex;height:16px;gap:2px;flex:none}
+.trilho .v{font-weight:600;white-space:nowrap}
+.var{text-align:right;font-size:12px;font-weight:600}
+.up{color:var(--bom)}.down{color:var(--ruim)}.neu{color:var(--sec)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--grade);text-align:left;white-space:nowrap}
+th{background:#F7F7F5;font-weight:600;position:sticky;top:0}
+td.n,th.n{text-align:right}
+tr.clic{cursor:pointer}tr.clic:hover td{background:#F7F7F5}
+tr.sel td{background:var(--azulc)}tr.ap td{color:var(--fraco)}
+tr.lic td{color:var(--lic)}
+tr.tot td{font-weight:600;background:#F7F7F5}
+.tabela{border:1px solid var(--borda);border-radius:8px;overflow:auto;max-height:62vh}
+.duas .tabela td:first-child,.duas .tabela td:nth-child(2){max-width:190px;overflow:hidden;text-overflow:ellipsis}
+.heat{border-radius:4px;padding:4px 8px;display:inline-block;min-width:100px;text-align:right}
+.voltar{background:none;border:0;color:var(--azul);padding:0;margin-left:10px}
+.ok{color:var(--bom)}.erro{color:var(--ruim)}
+.faixa{padding:10px 14px;border-radius:8px;font-weight:600;margin-bottom:12px}
+.faixa.ok{background:#E3F1E6}.faixa.erro{background:#FBE6E6}
+/* ---- fluxo: pílulas · número grande · Vendedores|Clientes ---- */
+.pills{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-bottom:12px}
+.pill{background:#fff;border:1px solid var(--borda);border-radius:18px;padding:6px 14px;font:inherit;font-size:13.5px;color:var(--texto)}
+.pill.on{border-color:var(--azul);color:var(--azul)}
+.pill.busca{width:260px}
+.pill.chk{display:flex;align-items:center;gap:6px;color:var(--lic);cursor:pointer}
+.pills .frase{background:none;margin:0;padding:0;color:var(--sec);font-size:13.5px}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;margin-bottom:16px}
+.hero.sem-lic{grid-template-columns:minmax(0,1fr)}
+.big,.licc,.corpo{background:#fff;border:1px solid var(--borda);border-radius:12px}
+.big{padding:16px 24px 18px}
+.big .rot,.licc .rot{color:var(--sec);font-size:13px}
+.big .num{font-size:34px;font-weight:600;letter-spacing:-.5px;margin:2px 0}
+.big .num .var{font-size:15px;letter-spacing:0}.big .num .vs{font-size:12.5px;font-weight:400;color:var(--sec);letter-spacing:0}
+.big .det,.licc .det{color:var(--sec);font-size:12.5px}
+.share{display:flex;gap:2px;height:10px;border-radius:5px;overflow:hidden;margin:16px 0 10px;background:var(--grade)}
+.share i{cursor:pointer;min-width:2px}
+.leg{display:flex;flex-wrap:wrap;gap:8px 40px}
+.leg>div{cursor:pointer}.leg>div.ap{opacity:.4}.leg>div.on .n{color:var(--azul);font-weight:600}
+.leg .n{font-size:12px;color:var(--sec);display:flex;align-items:center;gap:6px}
+.leg .x{font-size:16px;font-weight:600}.leg .x small{font-size:12px;margin-left:6px}
+.licc{padding:16px 24px;border-left:5px solid var(--lic);cursor:pointer}
+.licc .rot{color:var(--lic);font-weight:600}.licc .num2{font-size:27px;font-weight:600;margin:4px 0}
+.licc .lnk{color:var(--lic);text-decoration:underline;font-size:13px;margin-top:12px}
+.corpo{padding:4px 22px 14px}
+.ch{display:flex;align-items:center;gap:18px;border-bottom:1px solid var(--grade);margin-bottom:6px;flex-wrap:wrap}
+.tabs2{display:flex;gap:18px}
+.tabs2 button{border:0;background:none;font-size:17px;font-weight:600;color:#A6ABB5;padding:10px 0 8px;border-bottom:3px solid transparent}
+.tabs2 button.on{color:var(--texto);border-bottom-color:var(--azul)}
+.mig{flex:1;min-width:0;color:var(--sec);font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mig a{color:var(--azul);cursor:pointer}.mig b{color:var(--texto)}
+.lista .vl{display:grid;grid-template-columns:28px minmax(120px,22%) minmax(0,1fr) 130px 70px;gap:0 10px;align-items:center;height:40px;padding:0 6px;border-top:1px solid var(--grade);border-radius:0;cursor:pointer}
+.lista .vl:first-child{border-top:0}
+.lista .vl:hover{background:#F7F7F5}.lista .vl.ab{background:var(--azulc)}.lista .vl.ab .nm{color:var(--azul);font-weight:600}
+.pos{color:var(--fraco);font-weight:600;font-size:13px}
+.lista .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lista .trilho{display:block;min-width:0}.lista .seg{display:flex;gap:2px;height:14px;max-width:100%}
+.lista .v{text-align:right;font-weight:600;white-space:nowrap}
+.bloco{background:#FAFBFC;border-top:1px solid #DCE8F8;border-bottom:1px solid #DCE8F8;padding:8px 6px 10px calc(28px + 22% + 26px)}
+.bloco .info{color:var(--sec);font-size:12.5px;margin-bottom:4px}
+.bloco .cl{display:grid;grid-template-columns:minmax(0,1fr) 54px 130px 70px;gap:0 10px;align-items:center;height:28px;font-size:13px;cursor:pointer;border-radius:4px;padding-right:6px}
+.bloco .cl:hover{background:#EEF3FA}.bloco .cl.lic{color:var(--lic)}
+.bloco .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bloco small{color:var(--fraco);font-size:11.5px;margin-left:6px}
+.bloco .pc{text-align:right;color:var(--sec);font-size:12.5px}.bloco .v{text-align:right}
+.mais{border:0;background:none;color:var(--azul);text-decoration:underline;padding:6px 0 0;font-size:13px}
+td.pos{width:28px}
+.dica{color:var(--sec)}
+@media(max-width:900px){.hero{grid-template-columns:minmax(0,1fr)}.big .num{font-size:26px}
+ .lista .vl{grid-template-columns:22px minmax(0,1fr) 110px 54px;height:auto;min-height:40px;padding:6px 4px}.lista .vl .trilho{display:none}
+ .bloco{padding-left:10px}.bloco .cl{grid-template-columns:minmax(0,1fr) 100px 62px}.bloco .pc{display:none}.var{white-space:nowrap}
+ .pill.busca{width:100%}.mig{flex-basis:100%;order:3}.corpo{padding:4px 12px 12px}}
+footer{color:var(--fraco);font-size:12px;padding:0 20px 20px;max-width:1700px;margin:0 auto}
+@media(max-width:700px){main{padding:10px}.grupo{flex-wrap:wrap;margin-right:0}.cards{grid-template-columns:1fr 1fr;gap:8px}.card .val{font-size:16px}.vl{grid-template-columns:42% minmax(0,1fr) 50px}input[type=search]{width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <div class="l1"><h1 id="areas"></h1><nav id="abas"></nav><button id="selo" class="selo" hidden></button>
+    <label id="perbox" class="perbox" hidden>Ver o período <select id="per" onchange="trocarPeriodo(this.value)"></select></label></div>
+  <div class="sub" id="sub"></div>
+</header>
+<div class="alerta" id="alerta" hidden></div>
+<main id="conteudo"></main>
+<footer>Gerado pelo Painel de Pedidos a partir dos PDFs <span id="relatorio"></span>. Este arquivo é uma foto dos dados: não se atualiza sozinho.</footer>
+<script>
+const DADOS = {"gerado":"23\/11\/2026 13:32","inicial":0,"sala":[],"areas":[{"titulo":"Painel de Vendas","relatorio":"","notas":false,"pinicial":0,"periodos":[{"nome":"","empresas":[{"curta":"ALFA","nome":"ALFA TESTE COMERCIO LTDA","periodo":"02\/11\/2026 a 06\/11\/2026","emissao":"06\/11\/2026 09:32:36","arquivo":"exemplo_alfa_06-11.pdf","ti":259296.02,"vend":[{"c":"007","n":"LUCIENE TESTE","ti":76117.87,"m":0,"tl":76117.87,"tr":0,"p":[["10004","05\/11\/2026","2301","COMÉRCIO SÃO JOÃO LTDA",80.633,12057.12,0,""],["10009","04\/11\/2026","9425","INDÚSTRIA AÇO FORTE",10.146,527.87,0,""],["10014","05\/11\/2026","2301","COMÉRCIO SÃO JOÃO LTDA",206.259,14540.25,0,""],["10015","05\/11\/2026","4279","ELÉTRICA BOA VISTA",281.811,8359.96,0,""],["10018","03\/11\/2026","4279","ELÉTRICA BOA VISTA",228.523,14290.83,0,""],["10019","06\/11\/2026","7464","DISTRIBUIDORA ÁGUIA",276.734,1635,0,""],["10022","04\/11\/2026","9425","INDÚSTRIA AÇO FORTE",268.777,14602.8,0,""],["10027","06\/11\/2026","7464","DISTRIBUIDORA ÁGUIA",249.181,10104.04,0,""]]},{"c":"002","n":"FERNANDA TESTE","ti":30157.45,"m":0,"tl":30157.45,"tr":0,"p":[["10030","06\/11\/2026","7837","METALÚRGICA PRAZERES",118.613,12821.33,0,""],["10034","05\/11\/2026","4279","ELÉTRICA BOA VISTA",124.88,2719.16,0,""],["10039","02\/11\/2026","8217","OFICINA DO ZÉ",132.25,7700.13,0,""],["10041","04\/11\/2026","7464","DISTRIBUIDORA ÁGUIA",147.418,589.19,0,""],["10042","06\/11\/2026","2031","MAGAZINE CEARÁ",178.362,5994.96,0,""],["10044","06\/11\/2026","1133","CONSTRUTORA PÉ DE SERRA",68.854,332.68,0,""]]},{"c":"001","n":"ÁLVARO TESTE","ti":42886.78,"m":0,"tl":42886.78,"tr":0,"p":[["10049","05\/11\/2026","4279","ELÉTRICA BOA VISTA",154.618,14294.14,0,""],["10054","05\/11\/2026","8217","OFICINA DO ZÉ",273.017,9939.34,0,""],["10059","05\/11\/2026","2301","COMÉRCIO SÃO JOÃO LTDA",235.313,12334.22,0,""],["10064","06\/11\/2026","1133","CONSTRUTORA PÉ DE SERRA",233.442,3201.46,0,""],["10065","04\/11\/2026","7837","METALÚRGICA PRAZERES",171.43,3117.62,0,""]]},{"c":"010","n":"LICITAÇÃO","ti":56445.68,"m":0,"tl":56445.68,"tr":0,"p":[["10069","05\/11\/2026","8217","OFICINA DO ZÉ",104.477,8146.41,0,""],["10074","05\/11\/2026","8217","OFICINA DO ZÉ",180.357,12097.86,0,""],["10076","02\/11\/2026","1133","CONSTRUTORA PÉ DE SERRA",239.733,11986.9,0,""],["10079","02\/11\/2026","2301","COMÉRCIO SÃO JOÃO LTDA",25.887,397.86,0,""],["10080","03\/11\/2026","2031","MAGAZINE CEARÁ",81.324,11989.72,0,""],["10082","04\/11\/2026","8217","OFICINA DO ZÉ",21.785,2520.44,0,""],["10087","04\/11\/2026","1133","CONSTRUTORA PÉ DE SERRA",194.813,4523.22,0,""],["10090","05\/11\/2026","7837","METALÚRGICA PRAZERES",35.143,4783.27,0,""]]},{"c":"004","n":"MARCELO TESTE","ti":53688.24,"m":0,"tl":53688.24,"tr":0,"p":[["10094","04\/11\/2026","4279","ELÉTRICA BOA VISTA",33.52,13512.3,0,""],["10099","06\/11\/2026","4279","ELÉTRICA BOA VISTA",130.065,14636.97,0,""],["10101","05\/11\/2026","2301","COMÉRCIO SÃO JOÃO LTDA",44.792,10824.71,0,""],["10103","06\/11\/2026","7837","METALÚRGICA PRAZERES",203.775,8238.83,0,""],["10105","03\/11\/2026","7837","METALÚRGICA PRAZERES",157.645,605.9,0,""],["10110","05\/11\/2026","8217","OFICINA DO ZÉ",18.577,4584.3,0,""],["10112","04\/11\/2026","2301","COMÉRCIO SÃO JOÃO LTDA",22.147,1285.23,0,""]]}],"sv":[]},{"curta":"BETA","nome":"BETA TESTE LTDA","periodo":"02\/11\/2026 a 06\/11\/2026","emissao":"06\/11\/2026 09:32:36","arquivo":"exemplo_beta_06-11.pdf","ti":265545.44,"vend":[{"c":"001","n":"ÁLVARO TESTE","ti":86409.64,"m":0,"tl":86409.64,"tr":0,"p":[["20005","02\/11\/2026","2870","MAGAZINE CEARÁ",261.439,5555.61,0,""],["20008","05\/11\/2026","4221","DISTRIBUIDORA ÁGUIA",267.645,7957.43,0,""],["20013","03\/11\/2026","1490","CONSTRUTORA PÉ DE SERRA",69.95,2774.29,0,""],["20015","06\/11\/2026","1490","CONSTRUTORA PÉ DE SERRA",153.557,14980.45,0,""],["20020","05\/11\/2026","1490","CONSTRUTORA PÉ DE SERRA",239.231,11055.87,0,""],["20023","04\/11\/2026","5148","OFICINA DO ZÉ",294.312,14434.23,0,""],["20025","05\/11\/2026","4221","DISTRIBUIDORA ÁGUIA",196.818,3861.04,0,""],["20028","06\/11\/2026","3576","METALÚRGICA PRAZERES",155.102,11973.81,0,""],["20032","04\/11\/2026","3576","METALÚRGICA PRAZERES",170.744,13816.91,0,""]]},{"c":"002","n":"FERNANDA TESTE","ti":56437.4,"m":0,"tl":56437.4,"tr":0,"p":[["20036","04\/11\/2026","6015","ELÉTRICA BOA VISTA",244.59,12550.14,0,""],["20041","05\/11\/2026","2870","MAGAZINE CEARÁ",93.559,14366.82,0,""],["20046","04\/11\/2026","4221","DISTRIBUIDORA ÁGUIA",219.548,7410.26,0,""],["20049","04\/11\/2026","1600","INDÚSTRIA AÇO FORTE",218.059,13628.66,0,""],["20051","02\/11\/2026","1600","INDÚSTRIA AÇO FORTE",172.75,876.32,0,""],["20056","02\/11\/2026","6015","ELÉTRICA BOA VISTA",226.557,2177.02,0,""],["20059","03\/11\/2026","6015","ELÉTRICA BOA VISTA",283.131,1046.71,0,""],["20060","04\/11\/2026","1026","COMÉRCIO SÃO JOÃO LTDA",108.705,3855.1,0,""],["20061","02\/11\/2026","1600","INDÚSTRIA AÇO FORTE",286.414,526.37,0,""]]},{"c":"007","n":"LUCIENE TESTE","ti":14426.46,"m":0,"tl":14426.46,"tr":0,"p":[["20064","03\/11\/2026","2870","MAGAZINE CEARÁ",244.193,2483.21,0,""],["20066","05\/11\/2026","1026","COMÉRCIO SÃO JOÃO LTDA",177.248,11943.25,0,""]]},{"c":"004","n":"MARCELO TESTE","ti":51560.18,"m":0,"tl":51560.18,"tr":0,"p":[["20068","02\/11\/2026","1026","COMÉRCIO SÃO JOÃO LTDA",103.916,9286.31,0,""],["20069","04\/11\/2026","2870","MAGAZINE CEARÁ",147.14,4729.53,0,""],["20074","04\/11\/2026","1026","COMÉRCIO SÃO JOÃO LTDA",226.943,12957.32,0,""],["20076","03\/11\/2026","3576","METALÚRGICA PRAZERES",28.943,10357.82,0,""],["20077","05\/11\/2026","1026","COMÉRCIO SÃO JOÃO LTDA",236.734,14229.2,0,""]]},{"c":"010","n":"LICITAÇÃO","ti":56711.76,"m":0,"tl":56711.76,"tr":0,"p":[["20081","03\/11\/2026","5148","OFICINA DO ZÉ",262.459,5214.61,0,""],["20084","02\/11\/2026","4221","DISTRIBUIDORA ÁGUIA",210.143,14391.15,0,""],["20085","02\/11\/2026","2870","MAGAZINE CEARÁ",40.379,2685.05,0,""],["20089","06\/11\/2026","6015","ELÉTRICA BOA VISTA",275.003,10665.19,0,""],["20090","03\/11\/2026","6015","ELÉTRICA BOA VISTA",214.446,1242.18,0,""],["20091","06\/11\/2026","6015","ELÉTRICA BOA VISTA",237.683,9415.06,0,""],["20094","05\/11\/2026","2870","MAGAZINE CEARÁ",84.342,11297.57,0,""],["20096","05\/11\/2026","1026","COMÉRCIO SÃO JOÃO LTDA",123.209,1800.95,0,""]]}],"sv":[]},{"curta":"GAMA","nome":"GAMA TESTE LTDA","periodo":"02\/11\/2026 a 06\/11\/2026","emissao":"06\/11\/2026 09:32:36","arquivo":"exemplo_gama_06-11.pdf","ti":125676.89,"vend":[{"c":"010","n":"LICITAÇÃO","ti":50244.78,"m":0,"tl":50244.78,"tr":0,"p":[["30005","03\/11\/2026","2236","ELÉTRICA BOA VISTA",298.698,7133.41,0,""],["30010","05\/11\/2026","9616","METALÚRGICA PRAZERES",192.081,2386.65,0,""],["30012","02\/11\/2026","7866","DISTRIBUIDORA ÁGUIA",201.752,1100.87,0,""],["30017","04\/11\/2026","3998","COMÉRCIO SÃO JOÃO LTDA",234.243,12380.02,0,""],["30020","06\/11\/2026","9616","METALÚRGICA PRAZERES",215.928,13200.37,0,""],["30024","06\/11\/2026","7866","DISTRIBUIDORA ÁGUIA",133.942,14043.46,0,""]]},{"c":"001","n":"ÁLVARO TESTE","ti":51483.4,"m":0,"tl":51483.4,"tr":0,"p":[["30025","03\/11\/2026","3998","COMÉRCIO SÃO JOÃO LTDA",148.97,3981.02,0,""],["30029","05\/11\/2026","6161","MAGAZINE CEARÁ",152.666,5880.11,0,""],["30032","06\/11\/2026","7866","DISTRIBUIDORA ÁGUIA",70.484,5150.96,0,""],["30033","06\/11\/2026","6161","MAGAZINE CEARÁ",201.711,2572.03,0,""],["30036","03\/11\/2026","9809","INDÚSTRIA AÇO FORTE",190.26,14822.87,0,""],["30039","02\/11\/2026","6161","MAGAZINE CEARÁ",19.975,12831.05,0,""],["30043","04\/11\/2026","9809","INDÚSTRIA AÇO FORTE",240.378,6245.36,0,""]]},{"c":"002","n":"FERNANDA TESTE","ti":23948.71,"m":0,"tl":23948.71,"tr":0,"p":[["30044","05\/11\/2026","6161","MAGAZINE CEARÁ",230.869,13110.59,0,""],["30045","05\/11\/2026","3998","COMÉRCIO SÃO JOÃO LTDA",215.814,5064.67,0,""],["30048","02\/11\/2026","2236","ELÉTRICA BOA VISTA",93.591,1293.01,0,""],["30053","03\/11\/2026","3998","COMÉRCIO SÃO JOÃO LTDA",291.457,4480.44,0,""]]}],"sv":[]}],"anteriores":[{"curta":"ALFA","nome":"ALFA TESTE COMERCIO LTDA","periodo":"26\/10\/2026 a 30\/10\/2026","emissao":"06\/11\/2026 09:32:36","arquivo":"exemplo_alfa_30-10.pdf","ti":182062.19,"vend":[{"c":"007","n":"LUCIENE TESTE","ti":32311.99,"m":0,"tl":32311.99,"tr":0,"p":[["8001","01\/11\/2026","7511","COMÉRCIO SÃO JOÃO LTDA",289.463,9860.75,0,""],["8006","01\/11\/2026","7729","CONSTRUTORA PÉ DE SERRA",249.679,1088,0,""],["8007","01\/11\/2026","7502","ELÉTRICA BOA VISTA",180.286,11704.91,0,""],["8010","01\/11\/2026","3125","METALÚRGICA PRAZERES",156.218,9658.33,0,""]]},{"c":"002","n":"FERNANDA TESTE","ti":32810.17,"m":0,"tl":32810.17,"tr":0,"p":[["8011","01\/11\/2026","9271","INDÚSTRIA AÇO FORTE",196.786,6190.66,0,""],["8016","01\/11\/2026","9271","INDÚSTRIA AÇO FORTE",95.268,3560.54,0,""],["8019","01\/11\/2026","7511","COMÉRCIO SÃO JOÃO LTDA",169.38,1752.71,0,""],["8020","01\/11\/2026","8420","MAGAZINE CEARÁ",20.981,400.82,0,""],["8021","01\/11\/2026","7502","ELÉTRICA BOA VISTA",278.186,926.99,0,""],["8025","01\/11\/2026","3211","DISTRIBUIDORA ÁGUIA",22.838,9497.41,0,""],["8028","01\/11\/2026","9723","OFICINA DO ZÉ",94.052,374.97,0,""],["8032","01\/11\/2026","9271","INDÚSTRIA AÇO FORTE",74.67,1650.54,0,""],["8033","01\/11\/2026","3125","METALÚRGICA PRAZERES",54.126,8455.53,0,""]]},{"c":"001","n":"ÁLVARO TESTE","ti":46558.34,"m":0,"tl":46558.34,"tr":0,"p":[["8038","01\/11\/2026","7502","ELÉTRICA BOA VISTA",126.35,5848.71,0,""],["8042","01\/11\/2026","3211","DISTRIBUIDORA ÁGUIA",1.141,12985.36,0,""],["8047","01\/11\/2026","8420","MAGAZINE CEARÁ",64.002,6004.98,0,""],["8052","01\/11\/2026","9271","INDÚSTRIA AÇO FORTE",296.801,3316.66,0,""],["8055","01\/11\/2026","7511","COMÉRCIO SÃO JOÃO LTDA",249.257,5884.62,0,""],["8056","01\/11\/2026","9271","INDÚSTRIA AÇO FORTE",175.238,3758.74,0,""],["8061","01\/11\/2026","9723","OFICINA DO ZÉ",187.023,2039.23,0,""],["8066","01\/11\/2026","3125","METALÚRGICA PRAZERES",260.091,2864.99,0,""],["8068","01\/11\/2026","8420","MAGAZINE CEARÁ",245.523,3855.05,0,""]]},{"c":"010","n":"LICITAÇÃO","ti":53056.92,"m":0,"tl":53056.92,"tr":0,"p":[["8070","01\/11\/2026","7502","ELÉTRICA BOA VISTA",264.775,9112.48,0,""],["8074","01\/11\/2026","7511","COMÉRCIO SÃO JOÃO LTDA",33.605,7758.48,0,""],["8077","01\/11\/2026","7502","ELÉTRICA BOA VISTA",77.837,12382.21,0,""],["8082","01\/11\/2026","3125","METALÚRGICA PRAZERES",156.502,13949.16,0,""],["8083","01\/11\/2026","7729","CONSTRUTORA PÉ DE SERRA",144.311,9854.59,0,""]]},{"c":"004","n":"MARCELO TESTE","ti":17324.77,"m":0,"tl":17324.77,"tr":0,"p":[["8086","01\/11\/2026","7502","ELÉTRICA BOA VISTA",224.947,1176.94,0,""],["8090","01\/11\/2026","3125","METALÚRGICA PRAZERES",19.076,2767.37,0,""],["8093","01\/11\/2026","7729","CONSTRUTORA PÉ DE SERRA",109.281,13380.46,0,""]]}],"sv":[]},{"curta":"BETA","nome":"BETA TESTE LTDA","periodo":"26\/10\/2026 a 30\/10\/2026","emissao":"06\/11\/2026 09:32:36","arquivo":"exemplo_beta_30-10.pdf","ti":143987.04,"vend":[{"c":"004","n":"MARCELO TESTE","ti":15545.39,"m":0,"tl":15545.39,"tr":0,"p":[["9005","01\/11\/2026","8769","CONSTRUTORA PÉ DE SERRA",110.929,5194.25,0,""],["9007","01\/11\/2026","7875","COMÉRCIO SÃO JOÃO LTDA",23.308,10351.14,0,""]]},{"c":"007","n":"LUCIENE TESTE","ti":56122.53,"m":0,"tl":56122.53,"tr":0,"p":[["9011","01\/11\/2026","4507","INDÚSTRIA AÇO FORTE",275.753,12321.86,0,""],["9016","01\/11\/2026","5830","ELÉTRICA BOA VISTA",296.846,6443.57,0,""],["9020","01\/11\/2026","4507","INDÚSTRIA AÇO FORTE",291.425,8161.44,0,""],["9025","01\/11\/2026","8769","CONSTRUTORA PÉ DE SERRA",166.99,7682.63,0,""],["9026","01\/11\/2026","277","DISTRIBUIDORA ÁGUIA",200.777,7123.41,0,""],["9031","01\/11\/2026","277","DISTRIBUIDORA ÁGUIA",192.578,1377.56,0,""],["9033","01\/11\/2026","2436","MAGAZINE CEARÁ",282.385,13012.06,0,""]]},{"c":"010","n":"LICITAÇÃO","ti":57063.32,"m":0,"tl":57063.32,"tr":0,"p":[["9036","01\/11\/2026","4507","INDÚSTRIA AÇO FORTE",71.257,5545.34,0,""],["9041","01\/11\/2026","8769","CONSTRUTORA PÉ DE SERRA",114.894,12907.39,0,""],["9042","01\/11\/2026","7875","COMÉRCIO SÃO JOÃO LTDA",203.021,795.73,0,""],["9044","01\/11\/2026","4507","INDÚSTRIA AÇO FORTE",54.237,10484.05,0,""],["9045","01\/11\/2026","277","DISTRIBUIDORA ÁGUIA",149.992,9090.71,0,""],["9046","01\/11\/2026","6239","METALÚRGICA PRAZERES",63.429,4336.15,0,""],["9050","01\/11\/2026","6239","METALÚRGICA PRAZERES",286.812,2638.31,0,""],["9055","01\/11\/2026","6352","OFICINA DO ZÉ",57.58,11265.64,0,""]]},{"c":"001","n":"ÁLVARO TESTE","ti":15255.8,"m":0,"tl":15255.8,"tr":0,"p":[["9058","01\/11\/2026","6352","OFICINA DO ZÉ",73.234,278.15,0,""],["9059","01\/11\/2026","5830","ELÉTRICA BOA VISTA",295.161,14977.65,0,""]]}],"sv":[]},{"curta":"GAMA","nome":"GAMA TESTE LTDA","periodo":"26\/10\/2026 a 30\/10\/2026","emissao":"06\/11\/2026 09:32:36","arquivo":"exemplo_gama_30-10.pdf","ti":153203.89,"vend":[{"c":"010","n":"LICITAÇÃO","ti":62440.73,"m":0,"tl":62440.73,"tr":0,"p":[["9501","01\/11\/2026","3169","DISTRIBUIDORA ÁGUIA",251.459,9184.77,0,""],["9502","01\/11\/2026","2511","MAGAZINE CEARÁ",26.4,11942.53,0,""],["9505","01\/11\/2026","2233","METALÚRGICA PRAZERES",284.848,11937.49,0,""],["9508","01\/11\/2026","3789","OFICINA DO ZÉ",146.549,11361.81,0,""],["9513","01\/11\/2026","3169","DISTRIBUIDORA ÁGUIA",266.7,9633.87,0,""],["9514","01\/11\/2026","3789","OFICINA DO ZÉ",207.586,8380.26,0,""]]},{"c":"002","n":"FERNANDA TESTE","ti":30322.26,"m":0,"tl":30322.26,"tr":0,"p":[["9518","01\/11\/2026","2233","METALÚRGICA PRAZERES",88.699,2814.27,0,""],["9521","01\/11\/2026","2511","MAGAZINE CEARÁ",138.378,9141.66,0,""],["9525","01\/11\/2026","3142","CONSTRUTORA PÉ DE SERRA",165.458,8545.54,0,""],["9527","01\/11\/2026","3789","OFICINA DO ZÉ",22.909,9820.79,0,""]]},{"c":"004","n":"MARCELO TESTE","ti":60440.9,"m":0,"tl":60440.9,"tr":0,"p":[["9531","01\/11\/2026","4343","COMÉRCIO SÃO JOÃO LTDA",279.96,791.65,0,""],["9533","01\/11\/2026","2233","METALÚRGICA PRAZERES",192.078,2522.39,0,""],["9537","01\/11\/2026","2511","MAGAZINE CEARÁ",61.714,12826.77,0,""],["9540","01\/11\/2026","3142","CONSTRUTORA PÉ DE SERRA",217.092,3293.98,0,""],["9545","01\/11\/2026","4343","COMÉRCIO SÃO JOÃO LTDA",108.446,10956.25,0,""],["9548","01\/11\/2026","3142","CONSTRUTORA PÉ DE SERRA",58.669,11842.91,0,""],["9553","01\/11\/2026","4863","INDÚSTRIA AÇO FORTE",51.031,6522.81,0,""],["9558","01\/11\/2026","4343","COMÉRCIO SÃO JOÃO LTDA",247.782,9729.62,0,""],["9563","01\/11\/2026","4343","COMÉRCIO SÃO JOÃO LTDA",299.376,1954.52,0,""]]}],"sv":[]}]}]},{"titulo":"Painel de Faturamento","relatorio":"","notas":true,"pinicial":0,"periodos":[{"nome":"","empresas":[{"curta":"ALFA","nome":"ALFA TESTE LTDA","periodo":"01\/11\/2026 a 30\/11\/2026","emissao":"16\/11\/2026 13:26:41","arquivo":"exemplo_alfa_fat_novembro_ate16.pdf","ti":619034.53,"vend":[{"c":"003","n":"ÁLVARO TESTE","ti":101724.44,"m":0,"tl":101724.44,"tr":0,"p":[["5601","14\/11\/2026","","OFICINA DO ZÉ",0,17682.83,0,""],["5604","03\/11\/2026","","ATACADO ETA",0,17628.43,0,""],["5606","06\/11\/2026","","ELÉTRICA BOA VISTA",0,7835.33,0,""],["5608","14\/11\/2026","","HOSPITAL DELTA",0,28077.95,0,""],["5611","04\/11\/2026","","12.345.678 FULANO DE TAL",0,18617.49,0,""],["5614","10\/11\/2026","","ELÉTRICA BOA VISTA",0,11882.41,0,""]]},{"c":"006","n":"FERNANDA TESTE","ti":111231.06,"m":0,"tl":111231.06,"tr":0,"p":[["5615","10\/11\/2026","","31 BATALHAO DE TESTE",0,19742.99,0,""],["5617","10\/11\/2026","","ELÉTRICA BOA VISTA",0,32838.18,0,""],["5620","06\/11\/2026","","CONDOMINIO EDIFICIO GAMA",0,21953.9,0,""],["5621","05\/11\/2026","","12.345.678 FULANO DE TAL",0,36695.99,0,""]]},{"c":"009","n":"ROBERTA TESTE","ti":230942.47,"m":0,"tl":230942.47,"tr":0,"p":[["5624","03\/11\/2026","","HOSPITAL DELTA",0,23266.89,0,""],["5625","10\/11\/2026","","INCORPORADORA BETA SPE LTDA",0,18729.75,0,""],["5627","06\/11\/2026","","CONDOMINIO EDIFICIO GAMA",0,4359.49,0,""],["5629","11\/11\/2026","","CONSTRUTORA PÉ DE SERRA",0,32077.59,0,""],["5631","14\/11\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,20659.03,0,""],["5632","05\/11\/2026","","INCORPORADORA BETA SPE LTDA",0,21230.38,0,""],["5635","13\/11\/2026","","ATACADO ETA",0,2925.77,0,""],["5637","04\/11\/2026","","COMÉRCIO SÃO JOÃO LTDA",0,12488.13,0,""],["5639","13\/11\/2026","","CONSTRUTORA ALFA &",0,34513.32,0,""],["5640","06\/11\/2026","","METALURGICA ZETA",0,1385.02,0,""],["5641","10\/11\/2026","","12.345.678 FULANO DE TAL",0,38876.63,0,""],["5642","06\/11\/2026","","ATACADO ETA",0,20430.47,0,""]]},{"c":"012","n":"WAGNER TESTE","ti":63231.58,"m":0,"tl":63231.58,"tr":0,"p":[["5645","07\/11\/2026","","INDÚSTRIA AÇO FORTE",0,29266.39,0,""],["5646","03\/11\/2026","","INCORPORADORA BETA SPE LTDA",0,31839.23,0,""],["5649","15\/11\/2026","","MAGAZINE CEARÁ",0,2125.96,0,""]]},{"c":"015","n":"MARCELO TESTE","ti":111904.98,"m":0,"tl":111904.98,"tr":0,"p":[["5651","03\/11\/2026","","ATACADO ETA",0,36831.35,0,""],["5652","03\/11\/2026","","12.345.678 FULANO DE TAL",0,16687.28,0,""],["5654","12\/11\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,20816.36,0,""],["5655","05\/11\/2026","","COMÉRCIO SÃO JOÃO LTDA",0,37569.99,0,""]]}],"sv":[]},{"curta":"BETA","nome":"BETA TESTE LTDA","periodo":"01\/11\/2026 a 30\/11\/2026","emissao":"16\/11\/2026 13:26:41","arquivo":"exemplo_beta_fat_novembro_ate16.pdf","ti":602124.12,"vend":[{"c":"003","n":"ÁLVARO TESTE","ti":101903.12,"m":0,"tl":101903.12,"tr":0,"p":[["6602","15\/11\/2026","","SANEAMENTO TETA",0,28024.74,0,""],["6605","15\/11\/2026","","SANEAMENTO TETA",0,10937.55,0,""],["6608","12\/11\/2026","","SANEAMENTO TETA",0,19044.3,0,""],["6609","11\/11\/2026","","31 BATALHAO DE TESTE",0,9300.6,0,""],["6610","07\/11\/2026","","CONSTRUTORA ALFA &",0,4433.12,0,""],["6611","13\/11\/2026","","COMÉRCIO SÃO JOÃO LTDA",0,30162.81,0,""]]},{"c":"006","n":"WAGNER TESTE","ti":217608.35,"m":0,"tl":217608.35,"tr":0,"p":[["6612","15\/11\/2026","","METALURGICA ZETA",0,25794.58,0,""],["6615","11\/11\/2026","","INCORPORADORA BETA SPE LTDA",0,33455.88,0,""],["6617","04\/11\/2026","","INCORPORADORA BETA SPE LTDA",0,30511,0,""],["6620","08\/11\/2026","","ENGENHARIA ÉPSILON LTDA",0,35738.91,0,""],["6621","03\/11\/2026","","INDÚSTRIA AÇO FORTE",0,16533.9,0,""],["6623","07\/11\/2026","","METALURGICA ZETA",0,684.57,0,""],["6624","16\/11\/2026","","12.345.678 FULANO DE TAL",0,28550.51,0,""],["6627","03\/11\/2026","","CONDOMINIO EDIFICIO GAMA",0,10182.4,0,""],["6628","14\/11\/2026","","31 BATALHAO DE TESTE",0,10851.35,0,""],["6630","12\/11\/2026","","OFICINA DO ZÉ",0,1528.51,0,""],["6632","09\/11\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,23776.74,0,""]]},{"c":"009","n":"MARCELO TESTE","ti":23697.1,"m":0,"tl":23697.1,"tr":0,"p":[["6633","08\/11\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,20443.53,0,""],["6634","15\/11\/2026","","31 BATALHAO DE TESTE",0,3253.57,0,""]]},{"c":"012","n":"LUCIENE TESTE","ti":23473.16,"m":0,"tl":23473.16,"tr":0,"p":[["6637","14\/11\/2026","","ATACADO ETA",0,14601.43,0,""],["6638","03\/11\/2026","","SANEAMENTO TETA",0,8871.73,0,""]]},{"c":"015","n":"ROBERTA TESTE","ti":235442.39,"m":0,"tl":235442.39,"tr":0,"p":[["6641","16\/11\/2026","","HOSPITAL DELTA",0,20685.73,0,""],["6643","05\/11\/2026","","OFICINA DO ZÉ",0,39086.32,0,""],["6645","16\/11\/2026","","31 BATALHAO DE TESTE",0,1061.02,0,""],["6647","03\/11\/2026","","METALURGICA ZETA",0,35442.88,0,""],["6650","03\/11\/2026","","CONDOMINIO EDIFICIO GAMA",0,31206.61,0,""],["6651","07\/11\/2026","","INDÚSTRIA AÇO FORTE",0,20365.25,0,""],["6653","12\/11\/2026","","OFICINA DO ZÉ",0,37770.71,0,""],["6655","15\/11\/2026","","METALURGICA ZETA",0,18353.71,0,""],["6656","13\/11\/2026","","12.345.678 FULANO DE TAL",0,31470.16,0,""]]}],"sv":[]},{"curta":"GAMA","nome":"GAMA TESTE LTDA","periodo":"01\/11\/2026 a 30\/11\/2026","emissao":"16\/11\/2026 13:26:41","arquivo":"exemplo_gama_fat_novembro_ate16.pdf","ti":819699.03,"vend":[{"c":"003","n":"ROBERTA TESTE","ti":101380.55,"m":0,"tl":101380.55,"tr":0,"p":[["7603","09\/11\/2026","","METALURGICA ZETA",0,38776.04,0,""],["7605","16\/11\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,18133.97,0,""],["7607","06\/11\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,9611.97,0,""],["7608","16\/11\/2026","","SANEAMENTO TETA",0,16180.43,0,""],["7609","09\/11\/2026","","INDÚSTRIA AÇO FORTE",0,18678.14,0,""]]},{"c":"006","n":"LUCIENE TESTE","ti":191102.7,"m":0,"tl":191102.7,"tr":0,"p":[["7610","15\/11\/2026","","SANEAMENTO TETA",0,10285.64,0,""],["7612","07\/11\/2026","","OFICINA DO ZÉ",0,38723.05,0,""],["7615","15\/11\/2026","","ENGENHARIA ÉPSILON LTDA",0,4129.33,0,""],["7617","03\/11\/2026","","31 BATALHAO DE TESTE",0,7195.25,0,""],["7618","08\/11\/2026","","12.345.678 FULANO DE TAL",0,5230.69,0,""],["7621","15\/11\/2026","","METALURGICA ZETA",0,26219.14,0,""],["7622","07\/11\/2026","","HOSPITAL DELTA",0,35819.67,0,""],["7623","07\/11\/2026","","ATACADO ETA",0,11788.42,0,""],["7624","08\/11\/2026","","31 BATALHAO DE TESTE",0,30794.49,0,""],["7626","09\/11\/2026","","HOSPITAL DELTA",0,20917.02,0,""]]},{"c":"009","n":"WAGNER TESTE","ti":199269.82,"m":0,"tl":199269.82,"tr":0,"p":[["7628","05\/11\/2026","","HOSPITAL DELTA",0,9738.18,0,""],["7630","04\/11\/2026","","CONDOMINIO EDIFICIO GAMA",0,38932.37,0,""],["7631","04\/11\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,38289.68,0,""],["7633","12\/11\/2026","","ELÉTRICA BOA VISTA",0,39188.57,0,""],["7635","14\/11\/2026","","SANEAMENTO TETA",0,6879.4,0,""],["7638","07\/11\/2026","","MAGAZINE CEARÁ",0,39626.31,0,""],["7641","05\/11\/2026","","ATACADO ETA",0,26615.31,0,""]]},{"c":"012","n":"JOÃO TESTE","ti":89420.5,"m":0,"tl":89420.5,"tr":0,"p":[["7643","03\/11\/2026","","OFICINA DO ZÉ",0,35115.87,0,""],["7645","14\/11\/2026","","ATACADO ETA",0,26050.92,0,""],["7648","12\/11\/2026","","SANEAMENTO TETA",0,5571.48,0,""],["7649","06\/11\/2026","","OFICINA DO ZÉ",0,22682.23,0,""]]},{"c":"015","n":"ÁLVARO TESTE","ti":238525.46,"m":0,"tl":238525.46,"tr":0,"p":[["7650","03\/11\/2026","","CONSTRUTORA PÉ DE SERRA",0,32233.93,0,""],["7652","09\/11\/2026","","31 BATALHAO DE TESTE",0,400.63,0,""],["7655","13\/11\/2026","","CONSTRUTORA PÉ DE SERRA",0,27045.91,0,""],["7656","09\/11\/2026","","INDÚSTRIA AÇO FORTE",0,18779.39,0,""],["7659","07\/11\/2026","","SANEAMENTO TETA",0,30279.69,0,""],["7660","15\/11\/2026","","SANEAMENTO TETA",0,26069.4,0,""],["7663","05\/11\/2026","","ATACADO ETA",0,3051.78,0,""],["7665","12\/11\/2026","","CONSTRUTORA PÉ DE SERRA",0,31602.18,0,""],["7668","06\/11\/2026","","METALURGICA ZETA",0,933.84,0,""],["7669","13\/11\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,12623.19,0,""],["7672","09\/11\/2026","","ENGENHARIA ÉPSILON LTDA",0,35926.4,0,""],["7675","16\/11\/2026","","HOSPITAL DELTA",0,19579.12,0,""]]}],"sv":[]}],"anteriores":[{"curta":"ALFA","nome":"ALFA TESTE LTDA","periodo":"01\/10\/2026 a 30\/10\/2026","emissao":"06\/11\/2026 13:26:41","arquivo":"exemplo_alfa_fat_outubro.pdf","ti":798754.37,"vend":[{"c":"003","n":"FERNANDA TESTE","ti":135207.44,"m":0,"tl":135207.44,"tr":0,"p":[["5002","17\/10\/2026","","ELÉTRICA BOA VISTA",0,32030.82,0,""],["5003","24\/10\/2026","","INDÚSTRIA AÇO FORTE",0,18319.44,0,""],["5006","30\/10\/2026","","31 BATALHAO DE TESTE",0,25952.89,0,""],["5008","08\/10\/2026","","31 BATALHAO DE TESTE",0,12479.83,0,""],["5009","05\/10\/2026","","HOSPITAL DELTA",0,7665.51,0,""],["5011","21\/10\/2026","","31 BATALHAO DE TESTE",0,16476.27,0,""],["5013","15\/10\/2026","","ENGENHARIA ÉPSILON LTDA",0,22282.68,0,""]]},{"c":"006","n":"LUCIENE TESTE","ti":70364.29,"m":0,"tl":70364.29,"tr":0,"p":[["5016","21\/10\/2026","","COMÉRCIO SÃO JOÃO LTDA",0,5095.12,0,""],["5019","13\/10\/2026","","OFICINA DO ZÉ",0,6032.04,0,""],["5020","06\/10\/2026","","12.345.678 FULANO DE TAL",0,33670.81,0,""],["5022","26\/10\/2026","","ENGENHARIA ÉPSILON LTDA",0,25566.32,0,""]]},{"c":"009","n":"WAGNER TESTE","ti":100511.72,"m":0,"tl":100511.72,"tr":0,"p":[["5025","18\/10\/2026","","INDÚSTRIA AÇO FORTE",0,30310.94,0,""],["5028","08\/10\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,28734.57,0,""],["5031","10\/10\/2026","","CONDOMINIO EDIFICIO GAMA",0,27636.97,0,""],["5034","22\/10\/2026","","HOSPITAL DELTA",0,13829.24,0,""]]},{"c":"012","n":"ROBERTA TESTE","ti":171570.1,"m":0,"tl":171570.1,"tr":0,"p":[["5036","25\/10\/2026","","ELÉTRICA BOA VISTA",0,2618.44,0,""],["5038","21\/10\/2026","","12.345.678 FULANO DE TAL",0,17463.17,0,""],["5041","23\/10\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,17581.57,0,""],["5043","29\/10\/2026","","MAGAZINE CEARÁ",0,23369.98,0,""],["5044","22\/10\/2026","","CONDOMINIO EDIFICIO GAMA",0,23476.29,0,""],["5045","02\/10\/2026","","ELÉTRICA BOA VISTA",0,30192,0,""],["5048","02\/10\/2026","","12.345.678 FULANO DE TAL",0,31315.68,0,""],["5050","17\/10\/2026","","HOSPITAL DELTA",0,24903.76,0,""],["5052","15\/10\/2026","","ELÉTRICA BOA VISTA",0,649.21,0,""]]},{"c":"015","n":"MARCELO TESTE","ti":164404.49,"m":0,"tl":164404.49,"tr":0,"p":[["5053","27\/10\/2026","","31 BATALHAO DE TESTE",0,21082.54,0,""],["5054","13\/10\/2026","","ELÉTRICA BOA VISTA",0,29035.51,0,""],["5056","22\/10\/2026","","SANEAMENTO TETA",0,28571.38,0,""],["5059","02\/10\/2026","","OFICINA DO ZÉ",0,28078.25,0,""],["5060","26\/10\/2026","","INDÚSTRIA AÇO FORTE",0,19033.96,0,""],["5061","30\/10\/2026","","ELÉTRICA BOA VISTA",0,10064.46,0,""],["5062","05\/10\/2026","","CONSTRUTORA PÉ DE SERRA",0,8587.27,0,""],["5063","09\/10\/2026","","ENGENHARIA ÉPSILON LTDA",0,2812,0,""],["5064","18\/10\/2026","","ATACADO ETA",0,17139.12,0,""]]},{"c":"018","n":"JOÃO TESTE","ti":156696.33,"m":0,"tl":156696.33,"tr":0,"p":[["5067","15\/10\/2026","","CONSTRUTORA ALFA &",0,21016.19,0,""],["5069","05\/10\/2026","","METALURGICA ZETA",0,33083.68,0,""],["5070","30\/10\/2026","","CONSTRUTORA ALFA &",0,39993.56,0,""],["5072","28\/10\/2026","","ELÉTRICA BOA VISTA",0,10529.86,0,""],["5073","08\/10\/2026","","ENGENHARIA ÉPSILON LTDA",0,39922.84,0,""],["5075","01\/10\/2026","","INCORPORADORA BETA SPE LTDA",0,10960.26,0,""],["5076","30\/10\/2026","","INCORPORADORA BETA SPE LTDA",0,1189.94,0,""]]}],"sv":[]},{"curta":"BETA","nome":"BETA TESTE LTDA","periodo":"01\/10\/2026 a 30\/10\/2026","emissao":"06\/11\/2026 13:26:41","arquivo":"exemplo_beta_fat_outubro.pdf","ti":796641.85,"vend":[{"c":"003","n":"JOÃO TESTE","ti":269194.23,"m":0,"tl":269194.23,"tr":0,"p":[["6003","07\/10\/2026","","INCORPORADORA BETA SPE LTDA",0,24141.41,0,""],["6005","23\/10\/2026","","CONDOMINIO EDIFICIO GAMA",0,31353.05,0,""],["6007","03\/10\/2026","","OFICINA DO ZÉ",0,10321.39,0,""],["6008","15\/10\/2026","","HOSPITAL DELTA",0,30830.19,0,""],["6009","16\/10\/2026","","12.345.678 FULANO DE TAL",0,31483.18,0,""],["6012","26\/10\/2026","","31 BATALHAO DE TESTE",0,16245.19,0,""],["6013","14\/10\/2026","","31 BATALHAO DE TESTE",0,18788.48,0,""],["6014","21\/10\/2026","","CONDOMINIO EDIFICIO GAMA",0,32962.15,0,""],["6017","28\/10\/2026","","ENGENHARIA ÉPSILON LTDA",0,35315.5,0,""],["6019","08\/10\/2026","","ENGENHARIA ÉPSILON LTDA",0,17005.24,0,""],["6022","22\/10\/2026","","ATACADO ETA",0,16824.66,0,""],["6023","18\/10\/2026","","COMÉRCIO SÃO JOÃO LTDA",0,3923.79,0,""]]},{"c":"006","n":"FERNANDA TESTE","ti":117969.23,"m":0,"tl":117969.23,"tr":0,"p":[["6026","12\/10\/2026","","MAGAZINE CEARÁ",0,526.34,0,""],["6027","14\/10\/2026","","CONSTRUTORA PÉ DE SERRA",0,7356.55,0,""],["6028","13\/10\/2026","","HOSPITAL DELTA",0,27441.98,0,""],["6031","19\/10\/2026","","SANEAMENTO TETA",0,19084.1,0,""],["6034","10\/10\/2026","","OFICINA DO ZÉ",0,34749.6,0,""],["6037","17\/10\/2026","","COMÉRCIO SÃO JOÃO LTDA",0,27385.74,0,""],["6038","03\/10\/2026","","HOSPITAL DELTA",0,1424.92,0,""]]},{"c":"009","n":"ROBERTA TESTE","ti":212920.73,"m":0,"tl":212920.73,"tr":0,"p":[["6041","29\/10\/2026","","ELÉTRICA BOA VISTA",0,17774.37,0,""],["6044","23\/10\/2026","","ATACADO ETA",0,24453.37,0,""],["6047","05\/10\/2026","","31 BATALHAO DE TESTE",0,27477.86,0,""],["6050","30\/10\/2026","","ATACADO ETA",0,35714.11,0,""],["6051","03\/10\/2026","","INCORPORADORA BETA SPE LTDA",0,38291.37,0,""],["6053","13\/10\/2026","","HOSPITAL DELTA",0,2841.98,0,""],["6055","02\/10\/2026","","CONDOMINIO EDIFICIO GAMA",0,7821.73,0,""],["6056","09\/10\/2026","","CONSTRUTORA ALFA &",0,37499.79,0,""],["6058","07\/10\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,17085.5,0,""],["6060","08\/10\/2026","","OFICINA DO ZÉ",0,3960.65,0,""]]},{"c":"012","n":"MARCELO TESTE","ti":17831.69,"m":0,"tl":17831.69,"tr":0,"p":[["6061","21\/10\/2026","","ATACADO ETA",0,15910.04,0,""],["6064","19\/10\/2026","","CONDOMINIO EDIFICIO GAMA",0,1921.65,0,""]]},{"c":"015","n":"WAGNER TESTE","ti":89703.28,"m":0,"tl":89703.28,"tr":0,"p":[["6066","16\/10\/2026","","CONDOMINIO EDIFICIO GAMA",0,26467.26,0,""],["6068","01\/10\/2026","","INCORPORADORA BETA SPE LTDA",0,37488.43,0,""],["6070","22\/10\/2026","","ENGENHARIA ÉPSILON LTDA",0,14668.98,0,""],["6072","21\/10\/2026","","12.345.678 FULANO DE TAL",0,2315.13,0,""],["6075","03\/10\/2026","","ELÉTRICA BOA VISTA",0,8763.48,0,""]]},{"c":"018","n":"ÁLVARO TESTE","ti":89022.69,"m":0,"tl":89022.69,"tr":0,"p":[["6077","04\/10\/2026","","ATACADO ETA",0,14891.84,0,""],["6080","07\/10\/2026","","HOSPITAL DELTA",0,27116.57,0,""],["6083","22\/10\/2026","","31 BATALHAO DE TESTE",0,25112.49,0,""],["6084","15\/10\/2026","","CONDOMINIO EDIFICIO GAMA",0,21901.79,0,""]]}],"sv":[]},{"curta":"GAMA","nome":"GAMA TESTE LTDA","periodo":"01\/10\/2026 a 30\/10\/2026","emissao":"06\/11\/2026 13:26:41","arquivo":"exemplo_gama_fat_outubro.pdf","ti":837179.59,"vend":[{"c":"003","n":"FERNANDA TESTE","ti":155954.28,"m":0,"tl":155954.28,"tr":0,"p":[["7002","20\/10\/2026","","INDÚSTRIA AÇO FORTE",0,17250.05,0,""],["7005","17\/10\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,21788.1,0,""],["7006","24\/10\/2026","","ATACADO ETA",0,31665.6,0,""],["7007","17\/10\/2026","","INDÚSTRIA AÇO FORTE",0,5252.76,0,""],["7010","06\/10\/2026","","ATACADO ETA",0,24431.31,0,""],["7013","27\/10\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,8997.68,0,""],["7016","05\/10\/2026","","METALURGICA ZETA",0,19707.6,0,""],["7019","16\/10\/2026","","12.345.678 FULANO DE TAL",0,26861.18,0,""]]},{"c":"006","n":"WAGNER TESTE","ti":248699.98,"m":0,"tl":248699.98,"tr":0,"p":[["7020","27\/10\/2026","","31 BATALHAO DE TESTE",0,13419.31,0,""],["7023","14\/10\/2026","","METALURGICA ZETA",0,29942.25,0,""],["7025","05\/10\/2026","","OFICINA DO ZÉ",0,36316.83,0,""],["7027","07\/10\/2026","","12.345.678 FULANO DE TAL",0,3011.64,0,""],["7030","10\/10\/2026","","ATACADO ETA",0,17398.53,0,""],["7033","25\/10\/2026","","CONDOMINIO EDIFICIO GAMA",0,35569.4,0,""],["7036","24\/10\/2026","","ATACADO ETA",0,18884.84,0,""],["7039","28\/10\/2026","","31 BATALHAO DE TESTE",0,20530.57,0,""],["7041","08\/10\/2026","","OFICINA DO ZÉ",0,29759.13,0,""],["7044","27\/10\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,38964.44,0,""],["7045","13\/10\/2026","","SANEAMENTO TETA",0,4903.04,0,""]]},{"c":"009","n":"JOÃO TESTE","ti":76158.89,"m":0,"tl":76158.89,"tr":0,"p":[["7047","03\/10\/2026","","PREFEITURA MUNICIPAL DE IOTA",0,31180.06,0,""],["7049","24\/10\/2026","","OFICINA DO ZÉ",0,10300.71,0,""],["7050","11\/10\/2026","","OFICINA DO ZÉ",0,17996.11,0,""],["7051","17\/10\/2026","","MAGAZINE CEARÁ",0,16682.01,0,""]]},{"c":"012","n":"MARCELO TESTE","ti":175169.34,"m":0,"tl":175169.34,"tr":0,"p":[["7053","18\/10\/2026","","CONSTRUTORA PÉ DE SERRA",0,9312.05,0,""],["7054","13\/10\/2026","","ELÉTRICA BOA VISTA",0,11127.79,0,""],["7055","25\/10\/2026","","METALURGICA ZETA",0,6151.61,0,""],["7057","11\/10\/2026","","ATACADO ETA",0,10781.39,0,""],["7059","24\/10\/2026","","31 BATALHAO DE TESTE",0,9842.99,0,""],["7062","10\/10\/2026","","31 BATALHAO DE TESTE",0,33360.52,0,""],["7063","15\/10\/2026","","ATACADO ETA",0,7622.42,0,""],["7066","27\/10\/2026","","12.345.678 FULANO DE TAL",0,8401.3,0,""],["7068","03\/10\/2026","","ENGENHARIA ÉPSILON LTDA",0,37659.72,0,""],["7071","27\/10\/2026","","SANEAMENTO TETA",0,30608.6,0,""],["7072","01\/10\/2026","","METALURGICA ZETA",0,10300.95,0,""]]},{"c":"015","n":"ÁLVARO TESTE","ti":103370.98,"m":0,"tl":103370.98,"tr":0,"p":[["7073","21\/10\/2026","","12.345.678 FULANO DE TAL",0,17162.13,0,""],["7076","06\/10\/2026","","ELÉTRICA BOA VISTA",0,38392.33,0,""],["7078","04\/10\/2026","","CONSTRUTORA ALFA &",0,33495.54,0,""],["7081","25\/10\/2026","","OFICINA DO ZÉ",0,6659.52,0,""],["7082","23\/10\/2026","","MAGAZINE CEARÁ",0,7661.46,0,""]]},{"c":"018","n":"LUCIENE TESTE","ti":77826.12,"m":0,"tl":77826.12,"tr":0,"p":[["7084","23\/10\/2026","","SANEAMENTO TETA",0,24129.52,0,""],["7087","29\/10\/2026","","CONDOMINIO EDIFICIO GAMA",0,3116.43,0,""],["7090","05\/10\/2026","","ATACADO ETA",0,18817.74,0,""],["7093","08\/10\/2026","","COMÉRCIO SÃO JOÃO LTDA",0,31762.43,0,""]]}],"sv":[]}]}]}]};
+// várias ÁREAS no mesmo arquivo (Vendas e Faturamento); cada uma com os seus dados
+const AREAS = (DADOS.areas || [{titulo:'Painel de Vendas e Faturamento', relatorio:'', notas:/*NOTAS*/false, empresas:DADOS.empresas, anteriores:DADOS.anteriores}])
+  .map(a => a.periodos ? a : Object.assign(a, {periodos:[{nome:'', empresas:a.empresas, anteriores:a.anteriores}], pinicial:0}));
+AREAS.forEach(a => a.pver = a.pinicial || 0);   // período visto em cada área
+let D, NOTAS, ITENS, TODOS, ANT, EMP, TEM_ANT, EMP_ANT, TEM_LIC, COMP_TXT = '', areaAtual = 0;
+// datas dd/mm/aaaa dentro de um texto (k = qual delas)
+function dt(s, k){ const m = String(s||'').match(/\d{2}\/\d{2}\/\d{4}/g); if(!m || m.length <= k) return null; const [d,mo,a] = m[k].split('/').map(Number); return new Date(a, mo-1, d); }
+const fmtD = (d, ano) => String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + (ano ? '/' + d.getFullYear() : '');
+// ▲▼ justo com o período em andamento: compara com os MESMOS DIAS do período anterior
+function cortarAnterior(){
+  const cortes = {}, txt = [];
+  (D.anteriores||[]).forEach(an => {
+    const at = D.empresas.find(e => e.curta === an.curta);
+    let t = an.periodo;
+    if(at){
+      const iAt = dt(at.periodo,0), fAt = dt(at.periodo,1), iAn = dt(an.periodo,0), fAn = dt(an.periodo,1);
+      const ref = dt(at.emissao,0) || dt(DADOS.gerado,0);
+      if(iAt && fAt && iAn && fAn && ref && ref >= iAt && ref < fAt){
+        const corte = new Date(iAn.getTime() + Math.round((ref - iAt) / 864e5) * 864e5);
+        if(corte < fAn){ cortes[an.curta] = corte; t = fmtD(iAn) + ' a ' + fmtD(corte, true) + ' (mesmos dias)'; }
+      }
+    }
+    if(t && !txt.includes(t)) txt.push(t);
+  });
+  if(Object.keys(cortes).length) ANT = ANT.filter(p => { const c = cortes[p.emp], d = dt(p.data,0); return !c || !d || d <= c; });
+  COMP_TXT = txt.join(' / ');
+}
+
+const brl = new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'});
+const n3 = new Intl.NumberFormat('pt-BR', {minimumFractionDigits:3, maximumFractionDigits:3});
+const R = v => brl.format(v), Q = v => n3.format(v), P1 = v => v.toFixed(1).replace('.', ',');
+const norm = s => (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().replace(/\s+/g,' ').trim();
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const soma = a => a.reduce((s,p) => s + p.val, 0);
+const nCli = n => n + (n === 1 ? ' cliente' : ' clientes');
+const CORES = ['#2A78D6','#EB6834','#1BAF7A','#6250D6','#E87BA4','#EDA100'];
+function cor(nome){ const n = norm(nome); if(n.includes('ALFA')) return CORES[0]; if(n.includes('BETA')) return CORES[1]; if(n.includes('GAMA')) return CORES[2]; return CORES[3 + EMP.indexOf(nome) % 3]; }
+
+// pedidos "achatados": um objeto por pedido
+function achatar(lista){
+  const r = [];
+  (lista||[]).forEach(e => e.vend.forEach(v => v.p.forEach(p => r.push({
+    emp:e.curta, vk:norm(v.n), vend:v.n, num:p[0], data:p[1], cod:p[2], cli:p[3], ck:norm(p[3]), qtd:p[4], val:p[5], lic:!!p[6]
+  }))));
+  return r;
+}
+function usarArea(i){
+  areaAtual = i; const a = AREAS[i];
+  const pe = a.periodos[Math.min(a.pver, a.periodos.length-1)];
+  D = {gerado:DADOS.gerado, empresas:pe.empresas||[], anteriores:pe.anteriores||[]};
+  const sel = document.getElementById('per');
+  sel.innerHTML = a.periodos.map((p,k) => `<option value="${k}" ${k===a.pver?'selected':''}>${esc(p.nome)}${k===0?'  (mais recente)':''}</option>`).join('');
+  document.getElementById('perbox').hidden = a.periodos.length < 2;
+  NOTAS = !!a.notas; ITENS = NOTAS ? 'notas' : 'pedidos';
+  TODOS = achatar(D.empresas); ANT = achatar(D.anteriores); cortarAnterior();
+  EMP = D.empresas.map(e => e.curta);
+  TEM_ANT = D.anteriores.length > 0;
+  EMP_ANT = new Set(D.anteriores.map(e => e.curta));   // ▲▼ só com as empresas que têm período anterior
+  TEM_LIC = TODOS.some(p => p.lic);
+  document.title = AREAS.length > 1 ? 'Painel de ' + AREAS.map(x => x.titulo.replace('Painel de ','')).join(' e ') : a.titulo;
+  document.getElementById('relatorio').textContent = AREAS.map(x => '"' + x.relatorio + '"').join(' e ');
+}
+const comp = a => soma(a.filter(p => EMP_ANT.has(p.emp)));
+function trocarPeriodo(k){ AREAS[areaAtual].pver = +k; const i = areaAtual; areaAtual = -1; trocarArea(i); }
+function trocarArea(i){ if(i === areaAtual) return; usarArea(i); F.emp = null; F.vend.clear(); F.busca = ''; F.lic = false; Object.assign(est, {cli:null, menu:false, vab:null, vorig:null}); desenhar(); window.scrollTo(0,0); }
+
+const F = {emp:null, vend:new Set(), busca:'', lic:false};
+const est = {aba:0, porEmpresa:false, cli:null, menu:false, smenu:false, sub:0, vab:null, vorig:null};
+// ---------- SALA DE VENDAS ----------
+// vem com a seleção feita no programa; aqui dá para tirar/pôr vendedores (vale só nesta visualização)
+const SALA_NOMES = {}; (DADOS.sala||[]).forEach(n => SALA_NOMES[norm(n)] = n);
+const SALA = new Set(Object.keys(SALA_NOMES));
+let EM_SALA = false;
+function comSala(fn){
+  const t = TODOS, a = ANT;
+  TODOS = t.filter(p => SALA.has(p.vk)); ANT = a.filter(p => SALA.has(p.vk)); EM_SALA = true;
+  [...F.vend].forEach(k => { if(!SALA.has(k)) F.vend.delete(k); });
+  try { return fn(t); } finally { TODOS = t; ANT = a; EM_SALA = false; }
+}
+const VNOMES = {};   // chave -> nome, de todos os vendedores vistos
+function togSala(k){ if(SALA.has(k)) SALA.delete(k); else { SALA.add(k); SALA_NOMES[k] = VNOMES[k] || k; } est.cli = null; desenhar(); }
+function faixaSala(geral){
+  const vs = Object.values(geral.reduce((m,p) => { (m[p.vk] = m[p.vk] || {k:p.vk, n:p.vend, t:0}).t += p.val; return m; }, {}));
+  Object.keys(SALA_NOMES).forEach(k => { if(!vs.find(v => v.k === k)) vs.push({k, n:SALA_NOMES[k], t:0}); });
+  vs.sort((a,b) => a.n.localeCompare(b.n));
+  vs.forEach(v => VNOMES[v.k] = v.n);
+  const dentro = vs.filter(v => SALA.has(v.k)), fora = vs.filter(v => !SALA.has(v.k));
+  const tSala = soma(TODOS), tGeral = soma(geral);
+  let h = '<div class="caixa sala"><div class="lin"><span class="rot">Sala de Vendas</span>';
+  h += dentro.length ? dentro.map(v => `<span class="vchip">${esc(v.n)}<button title="Tirar da sala" onclick="togSala('${esc(v.k)}')">×</button></span>`).join('') : '<span class="sec">nenhum vendedor na sala</span>';
+  h += `<div class="vsel ssel"><button onclick="est.smenu=!est.smenu;est.menu=false;desenhar()">+ Vendedores ▾</button>`;
+  if(est.smenu) h += '<div class="vmenu">' + vs.map(v => `<label><input type="checkbox" ${SALA.has(v.k)?'checked':''} onchange="togSala('${esc(v.k)}')"> ${esc(v.n)}</label>`).join('') + '</div>';
+  h += '</div></div>';
+  h += `<div class="frase"><b>${dentro.length} vendedor${dentro.length===1?'':'es'} · ${R(tSala)}</b>${tGeral > 0 ? ` &nbsp;=&nbsp; ${P1(tSala/tGeral*100)}% do total das empresas (${R(tGeral)})` : ''}<span class="sec"> &nbsp;·&nbsp; tirar/pôr vendedor aqui vale só nesta visualização</span></div></div>`;
+  return h;
+}
+
+function filtrar(peds, comVend, semEmp){
+  const q = norm(F.busca);
+  return peds.filter(p => (semEmp || !F.emp || p.emp === F.emp) && (!comVend || !F.vend.size || F.vend.has(p.vk)) && (!q || p.ck.includes(q)) && (!F.lic || p.lic));
+}
+const algum = () => F.emp || F.vend.size || F.busca.trim() || F.lic;
+
+function variacao(atual, ant){
+  if(!TEM_ANT) return null;
+  if(ant < 0.005 && atual < 0.005) return null;
+  if(ant < 0.005) return {t:'novo', c:'up'};
+  const v = (atual/ant - 1) * 100;
+  if(Math.abs(v) < 0.5) return {t:'= 0%', c:'neu'};
+  return {t:(v>0?'▲ ':'▼ ') + (Math.abs(v) < 10 ? P1(Math.abs(v)) : Math.round(Math.abs(v))) + '%', c: v>0?'up':'down'};
+}
+const varHtml = (a,b) => { const v = variacao(a,b); return v ? `<span class="${v.c}">${v.t}</span>` : ''; };
+
+function nomeVend(k){ const p = TODOS.find(x => x.vk === k); return p ? p.vend : k; }
+function nomesEscolhidos(max){ const n = [...F.vend].map(nomeVend).sort(); return n.length <= max ? n.join(' e ') : n.slice(0,max).join(', ') + ' +' + (n.length-max); }
+
+// ---------------- linha de filtros ("pílulas") ----------------
+function filtros(){
+  const vendLista = Object.values(filtrar(TODOS, false).reduce((m,p) => { (m[p.vk] = m[p.vk] || {k:p.vk, n:p.vend, t:0}).t += p.val; return m; }, {})).sort((a,b) => b.t-a.t);
+  F.vend.forEach(k => { if(!vendLista.find(v => v.k === k)) vendLista.push({k, n:nomeVend(k), t:0}); });
+  let h = '<div class="pills"><div class="vsel">';
+  h += `<button class="pill ${F.vend.size?'on':''}" onclick="est.menu=!est.menu;est.smenu=false;desenhar()">Vendedores: <b>${F.vend.size ? esc(nomesEscolhidos(2)) : (EM_SALA ? 'todos da sala' : 'todos')}</b> ▾</button>`;
+  if(est.menu) h += '<div class="vmenu">' + vendLista.map(v => `<label><input type="checkbox" ${F.vend.has(v.k)?'checked':''} onchange="togVend('${esc(v.k)}')"> ${esc(v.n)}</label>`).join('') + '</div>';
+  h += '</div>';
+  h += `<input type="search" id="busca" class="pill busca" placeholder="🔍 buscar cliente (razão social)" value="${esc(F.busca)}" oninput="F.busca=this.value;est.cli=null;desenhar(true)">`;
+  h += `<label class="pill chk"><input type="checkbox" ${F.lic?'checked':''} onchange="F.lic=this.checked;est.cli=null;desenhar()"> só licitação</label>`;
+  if(algum()){
+    // a frase só aparece com filtro (sem filtro ela repetiria o número grande)
+    const f = filtrar(TODOS, true), tot = soma(TODOS), tf = soma(f), partes = [];
+    if(F.vend.size) partes.push(esc(nomesEscolhidos(3)));
+    if(F.emp) partes.push(esc(F.emp));
+    if(F.busca.trim()) partes.push(`clientes com “${esc(F.busca.trim())}”`);
+    if(F.lic) partes.push('só licitação');
+    h += `<button class="limpar" onclick="limpar()">Limpar filtros</button><span class="frase">Mostrando ${partes.join(' · ')} → <b>${f.length} ${ITENS} · ${R(tf)}</b>${tot > 0 ? ` (${P1(tf/tot*100)}% do total)` : ''}</span>`;
+  }
+  return h + '</div>';
+}
+
+// ---------------- número grande + empresas + licitação ----------------
+function hero(){
+  const semEmp = filtrar(TODOS, true, true), semEmpAnt = filtrar(ANT, true, true);
+  const f = F.emp ? semEmp.filter(p => p.emp === F.emp) : semEmp, fa = F.emp ? semEmpAnt.filter(p => p.emp === F.emp) : semEmpAnt;
+  const tot = soma(f), v = variacao(comp(f), soma(fa));
+  const rot = algum() ? 'Total do filtro' : EM_SALA ? 'Total da sala de vendas' : `Total ${NOTAS?'faturado':'vendido'}${EMP.length > 1 ? ' · ' + EMP.length + ' empresas' : ''}`;
+  let h = `<div class="hero ${TEM_LIC?'':'sem-lic'}"><div class="big"><div class="rot">${rot}</div>
+    <div class="num">${R(tot)}${v ? ` <span class="var ${v.c}">${v.t}</span> <span class="vs">vs ${esc(COMP_TXT)}</span>` : ''}</div>
+    <div class="det">${f.length} ${ITENS} · ${nCli(new Set(f.map(p => p.ck)).size)}</div>`;
+  if(EMP.length > 1){
+    const b = soma(semEmp);
+    h += '<div class="share">' + EMP.map(e => { const s = soma(semEmp.filter(p => p.emp === e)); return s > 0 ? `<i title="${esc(e)}" style="flex:${(s/(b||1)).toFixed(4)} 1 0;background:${cor(e)};${F.emp && F.emp !== e ? 'opacity:.3' : ''}" onclick="setEmp(F.emp==='${esc(e)}'?null:'${esc(e)}')"></i>` : ''; }).join('') + '</div>';
+    h += '<div class="leg">' + EMP.map(e => {
+      const pe = semEmp.filter(p => p.emp === e), s = soma(pe), ap = F.emp && F.emp !== e;
+      const ve = EMP_ANT.has(e) ? variacao(s, soma(semEmpAnt.filter(p => p.emp === e))) : null;
+      return `<div class="${ap?'ap':''} ${F.emp===e?'on':''}" onclick="setEmp(F.emp==='${esc(e)}'?null:'${esc(e)}')"><div class="n"><span class="ponto" style="background:${cor(e)}"></span>${esc(e)} · ${b>0?P1(s/b*100):'0'}%</div>
+        <div class="x">${R(s)}${ve ? ` <small class="${ve.c}">${ve.t}</small>` : ''}</div></div>`;
+    }).join('') + '</div>';
+  }
+  h += '</div>';
+  if(TEM_LIC){
+    const l = f.filter(p => p.lic), sl = soma(l);
+    h += `<div class="licc" onclick="F.lic=!F.lic;est.cli=null;desenhar()"><div class="rot">● Licitação (dentro do total)</div><div class="num2">${R(sl)}</div>
+      <div class="det">${tot>0?P1(sl/tot*100)+'% do total · ':''}${l.length} ${ITENS} · ${nCli(new Set(l.map(p => p.ck)).size)}</div>
+      <div class="lnk">${F.lic ? '✓ mostrando só licitação — tirar' : 'ver só licitação →'}</div></div>`;
+  }
+  return h + '</div>';
+}
+
+// ---------------- corpo: Vendedores | Clientes ----------------
+function linhasVend(){
+  const peds = filtrar(TODOS, false).filter(p => !F.vend.size || F.vend.has(p.vk)), ant = filtrar(ANT, false);
+  const emps = F.emp ? [F.emp] : EMP, g = {};
+  peds.forEach(p => (g[p.vk] = g[p.vk] || {k:p.vk, n:p.vend, ped:[]}).ped.push(p));
+  return {emps, ant, linhas: Object.values(g).map(x => {
+    const t = soma(x.ped), cl = {};
+    x.ped.forEach(p => { (cl[p.ck] = cl[p.ck] || {n:p.cli, v:0}).v += p.val; });
+    const top = Object.values(cl).sort((a,b) => b.v-a.v)[0];
+    return Object.assign(x, {t, ncli:Object.keys(cl).length, princ: top.n + ' (' + Math.round(top.v/(t||1)*100) + '%)', ant: soma(ant.filter(p => p.vk === x.k)), c: comp(x.ped), pe: Object.fromEntries(emps.map(e => [e, soma(x.ped.filter(p => p.emp === e))]))});
+  }).sort((a,b) => b.t - a.t)};
+}
+
+function corpo(){
+  const sub = est.sub || 0;
+  // caminho ("Todos os vendedores › FULANO › CLIENTE") ou dica
+  let mig = '';
+  if(sub === 0 && est.vab) mig = `<a onclick="est.vab=null;desenhar()">Todos os vendedores</a> › <b>${esc(nomeVend(est.vab))}</b>`;
+  else if(sub === 1 && est.cli){
+    const nc = esc((TODOS.find(p => p.ck === est.cli) || {cli:''}).cli);
+    mig = est.vorig ? `<a onclick="est.sub=0;est.vab=null;est.cli=null;est.vorig=null;desenhar()">Todos os vendedores</a> › <a onclick="est.sub=0;est.vab=est.vorig;est.cli=null;est.vorig=null;desenhar()">${esc(nomeVend(est.vorig))}</a> › <b>${nc}</b>`
+                    : `<a onclick="est.cli=null;desenhar()">Todos os clientes</a> › <b>${nc}</b>`;
+  }
+  else mig = `<span class="dica">${sub === 0 ? 'clique num vendedor para ver os clientes dele' : 'clique num cliente para ver os ' + ITENS}</span>`;
+  const dir = sub === 0 ? `<div class="toggle"><button class="${!est.porEmpresa?'on':''}" onclick="est.porEmpresa=false;desenhar()">Ranking</button><button class="${est.porEmpresa?'on':''}" onclick="est.porEmpresa=true;desenhar()">Por empresa</button></div>` : '';
+  let h = `<div class="corpo"><div class="ch"><div class="tabs2">${['Vendedores','Clientes'].map((t,i) => `<button class="${i===sub?'on':''}" onclick="est.sub=${i};est.cli=null;est.vorig=null;desenhar()">${t}</button>`).join('')}</div>
+    <div class="mig">${mig}</div>${dir}</div>`;
+  h += sub === 0 ? vendedores() : clientes();
+  return h + '</div>';
+}
+
+function vendedores(){
+  const {emps, ant, linhas} = linhasVend();
+  if(!linhas.length) return '<p class="exp">Nenhuma venda com estes filtros.</p>';
+  if(est.porEmpresa){
+    const max = Math.max(...linhas.flatMap(l => emps.map(e => l.pe[e])), 1);
+    let h = `<div class="tabela" style="max-height:none;border:0"><table><tr><th></th><th>Vendedor</th>${emps.map(e => `<th class="n">${esc(e)}</th>`).join('')}<th class="n">Total</th>${TEM_ANT?'<th class="n">vs ant.</th>':''}</tr>`;
+    linhas.forEach((l,i) => {
+      h += `<tr class="clic" onclick="est.porEmpresa=false;est.vab='${esc(l.k)}';desenhar()"><td class="pos">${i+1}</td><td>${esc(l.n)}</td>` + emps.map(e => {
+        const v = l.pe[e], a = v > 0 ? 0.1 + 0.6 * v / max : 0;
+        return `<td class="n">${v > 0 ? `<span class="heat" style="background:rgba(42,120,214,${a.toFixed(2)});${v/max > .6 ? 'color:#fff' : ''}">${R(v)}</span>` : '—'}</td>`;
+      }).join('') + `<td class="n"><b>${R(l.t)}</b></td>${TEM_ANT?`<td class="n var">${varHtml(l.c, l.ant)}</td>`:''}</tr>`;
+    });
+    return h + '</table></div>';
+  }
+  const max = linhas[0].t;
+  let h = '<div class="lista">';
+  linhas.forEach((l,i) => {
+    const ab = est.vab === l.k;
+    const segs = emps.map(e => l.pe[e] > 0 ? `<i style="flex:${(l.pe[e]/l.t).toFixed(4)} 1 0;background:${cor(e)}"></i>` : '').join('');
+    const dica = `${l.ped.length} ${ITENS} · ${nCli(l.ncli)} · principal: ${l.princ}` + (emps.length > 1 ? '\n' + emps.filter(e => l.pe[e] > 0).map(e => e + ' ' + R(l.pe[e])).join(' · ') : '');
+    h += `<div class="vl ${ab?'ab':''}" title="${esc(dica)}" onclick="est.vab=${ab?'null':`'${esc(l.k)}'`};desenhar()"><span class="pos">${i+1}</span><span class="nm">${esc(l.n)}${ab?' ▾':''}</span>
+      <span class="trilho"><span class="seg" style="width:${(l.t/max*100).toFixed(2)}%">${segs}</span></span><span class="v">${R(l.t)}</span><span class="var">${varHtml(l.c, l.ant)}</span></div>`;
+    if(ab) h += bloco(l, emps, ant);
+  });
+  return h + '</div>';
+}
+
+// clientes do vendedor aberto, logo abaixo dele
+function bloco(l, emps, ant){
+  const g = {};
+  l.ped.forEach(p => { const c = g[p.ck] = g[p.ck] || {k:p.ck, n:p.cli, v:0, q:0, lic:false, ped:[]}; c.v += p.val; c.q++; c.lic = c.lic || p.lic; c.ped.push(p); });
+  const cls = Object.values(g).sort((a,b) => b.v-a.v), MAX = 8;
+  let h = `<div class="bloco"><div class="info">${l.ped.length} ${ITENS} · ${nCli(cls.length)}${emps.length > 1 ? ' · ' + emps.filter(e => l.pe[e] > 0).map(e => esc(e) + ' ' + R(l.pe[e])).join(' · ') : ''}</div>`;
+  cls.slice(0, MAX).forEach(c => {
+    const a = soma(ant.filter(p => p.vk === l.k && p.ck === c.k));
+    h += `<div class="cl ${c.lic?'lic':''}" onclick="est.sub=1;est.cli='${esc(c.k)}';est.vorig='${esc(l.k)}';desenhar()"><span class="nm">${esc(c.n)}${c.lic?' (licitação)':''}${c.q > 1 ? ` <small>${c.q} ${NOTAS?'NF':'ped.'}</small>` : ''}</span>
+      <span class="pc">${Math.round(c.v/(l.t||1)*100)}%</span><span class="v">${R(c.v)}</span><span class="var">${a > 0.005 ? varHtml(comp(c.ped), a) : ''}</span></div>`;
+  });
+  if(cls.length > MAX) h += `<button class="mais" onclick="F.vend=new Set(['${esc(l.k)}']);est.sub=1;est.cli=null;est.vab=null;desenhar()">+ ${cls.length - MAX} clientes — ver todos os clientes de ${esc(l.n.split(' ')[0])}</button>`;
+  return h + '</div>';
+}
+
+// ---------------- aba Clientes / pedidos ----------------
+function clientes(){
+  const f = filtrar(TODOS, true);
+  if(est.cli && !f.some(p => p.ck === est.cli)){ est.cli = null; est.vorig = null; }
+  if(!est.cli){
+    const g = {};
+    f.forEach(p => { const c = g[p.ck] = g[p.ck] || {k:p.ck, nomes:{}, vend:{}, ped:0, val:0, lic:false}; c.nomes[p.cli] = (c.nomes[p.cli]||0)+1; c.vend[p.vend] = (c.vend[p.vend]||0)+p.val; c.ped++; c.val += p.val; c.lic = c.lic || p.lic; });
+    const cls = Object.values(g).map(c => Object.assign(c, {nome:Object.entries(c.nomes).sort((a,b)=>b[1]-a[1])[0][0], vs:Object.entries(c.vend).sort((a,b)=>b[1]-a[1]).map(x => x[0].split(' ')[0])})).sort((a,b) => b.val-a.val);
+    const tot = soma(f), ant = filtrar(ANT, true);
+    let h = `<div class="exp" style="margin:2px 0 8px">${nCli(cls.length)} · ${R(tot)}</div><div class="tabela"><table><tr><th>Cliente</th><th>Vendedor(es)</th><th class="n">Valor</th><th class="n"></th><th class="n">%</th></tr>`;
+    cls.forEach(c => {
+      const a = soma(ant.filter(p => p.ck === c.k));   // ▲▼ só para quem também comprou antes
+      h += `<tr class="clic ${c.lic?'lic':''}" onclick="est.cli='${esc(c.k)}';est.vorig=null;desenhar()"><td>${esc(c.nome)}${c.ped > 1 ? ` <small class="sec">${c.ped} ${NOTAS?'NF':'ped.'}</small>` : ''}${c.lic?' (licitação)':''}</td><td>${esc(c.vs.slice(0,3).join(', '))}${c.vs.length>3?' +'+(c.vs.length-3):''}</td><td class="n">${R(c.val)}</td><td class="n var">${a > 0.005 ? varHtml(comp(f.filter(p => p.ck === c.k)), a) : ''}</td><td class="n">${tot>0?P1(c.val/tot*100):'0'}%</td></tr>`;
+    });
+    return h + '</table></div>';
+  }
+  let peds = f.filter(p => p.ck === est.cli && (!est.vorig || p.vk === est.vorig));
+  if(!peds.length){ est.vorig = null; peds = f.filter(p => p.ck === est.cli); }
+  peds.sort((a,b) => a.data.split('/').reverse().join('').localeCompare(b.data.split('/').reverse().join('')));
+  const lic = peds.some(p => p.lic);
+  let h = `<div class="exp" style="margin:2px 0 8px;${lic?'color:var(--lic)':''}">${lic?'Licitação · ':''}${peds.length} ${ITENS} · ${R(soma(peds))} · ${[...new Set(peds.map(p => p.emp))].join(', ')}</div>`;
+  h += `<div class="tabela"><table><tr><th>Empresa</th><th>${NOTAS?'Nota':'Pedido'}</th><th>Data</th><th>Vendedor</th>${NOTAS?'':'<th class="n">Quantidade</th>'}<th class="n">Valor</th></tr>`;
+  peds.forEach(p => h += `<tr class="${p.lic?'lic':''}"><td>${esc(p.emp)}</td><td>${esc(p.num)}</td><td>${esc(p.data)}</td><td>${esc(p.vend)}</td>${NOTAS?'':`<td class="n">${Q(p.qtd)}</td>`}<td class="n">${R(p.val)}</td></tr>`);
+  return h + '</table></div>';
+}
+
+function conferencia(emps){
+  const d = {emps};
+  let prob = 0, linhas = '';
+  d.emps.forEach(e => {
+    let soma = 0, np = 0;
+    e.vend.forEach(v => {
+      const atual = v.p.reduce((s,p)=>s+p[5],0); soma += atual; np += v.p.length;
+      if(v.m){ linhas += `<tr style="color:#6250D6"><td>${esc(e.curta)}</td><td>${esc(v.n)} (criado no programa)</td><td class="n">${v.p.length}</td><td class="n">${R(atual)}</td><td class="n">—</td><td></td><td>recebeu licitações</td></tr>`; return; }
+      const t = v.tl != null ? v.tl : atual;   // compara com o que veio no PDF, antes das licitações
+      const ok = v.ti == null ? null : Math.abs(t - v.ti) < 0.005; if(ok === false) prob++;
+      const rec = v.p.filter(p => p[6] && p[7]).reduce((s,p)=>s+p[5],0);
+      const extra = (v.tr > 0.004 ? ' · ' + R(v.tr) + ' foi p/ licitação' : '') + (rec > 0.004 ? ' · recebeu ' + R(rec) + ' de licitação' : '');
+      linhas += `<tr><td>${esc(e.curta)}</td><td>${esc((v.c?v.c+' - ':'')+v.n)}</td><td class="n">${v.p.filter(p => !(p[6] && p[7])).length + e.vend.reduce((s,x)=>s+x.p.filter(p => p[6] && p[7] === v.n).length,0)}</td><td class="n">${R(t)}</td><td class="n">${v.ti==null?'—':R(v.ti)}</td><td class="n">${v.ti==null?'—':R(t-v.ti)}</td><td class="${ok?'ok':ok===false?'erro':''}">${ok==null?'sem total no relatório':ok?'✓ confere':'⚠ diferente'}${extra}</td></tr>`;
+    });
+    (e.sv||[]).forEach(v => {
+      const t = v.p.reduce((s,p)=>s+p[5],0); soma += t; np += v.p.length;
+      linhas += `<tr style="color:var(--sec);font-style:italic"><td>${esc(e.curta)}</td><td>Sem vendedor${v.c ? ' (código '+esc(v.c)+')' : ''}</td><td class="n">${v.p.length}</td><td class="n">${R(t)}</td><td class="n">${v.ti==null?'—':R(v.ti)}</td><td></td><td>desconsiderado no painel</td></tr>`;
+    });
+    const okg = e.ti == null ? false : Math.abs(soma - e.ti) < 0.005; if(!okg) prob++;
+    linhas += `<tr class="tot"><td>${esc(e.curta)}</td><td>TOTAL GERAL${(e.sv||[]).length?' (com os sem vendedor)':''}</td><td class="n">${np}</td><td class="n">${R(soma)}</td><td class="n">${e.ti==null?'—':R(e.ti)}</td><td class="n">${e.ti==null?'—':R(soma-e.ti)}</td><td class="${okg?'ok':'erro'}">${e.ti==null?'TOTAL GERAL não encontrado':okg?'✓ confere':'⚠ diferente'}</td></tr>`;
+  });
+  const fora = d.emps.reduce((s,e) => s + (e.sv||[]).reduce((a,v) => a + v.p.reduce((b,p)=>b+p[5],0), 0), 0);
+  if(d.emps.length > 1){
+    const somaP = d.emps.reduce((s,e) => s + e.vend.reduce((a,v) => a + v.p.reduce((b,p)=>b+p[5],0), 0), 0);
+    const nP = d.emps.reduce((s,e) => s + e.vend.reduce((a,v) => a + v.p.length, 0), 0);
+    const inf = d.emps.every(e => e.ti != null) ? d.emps.reduce((s,e)=>s+e.ti,0) : null;
+    linhas += `<tr class="tot" style="background:var(--azulc)"><td>SOMA</td><td>TOTAL DAS ${d.emps.length} EMPRESAS (painel, sem os sem vendedor)</td><td class="n">${nP}</td><td class="n">${R(somaP)}</td><td class="n">${inf==null?'—':R(inf)}</td><td></td><td></td></tr>`;
+  }
+  const extraFora = fora > 0.004 ? `   Sem vendedor (fora do painel): ${R(fora)}.` : '';
+  const faixa = prob === 0 ? `<div class="faixa ok">✓ Tudo confere: a soma ${NOTAS?'das notas lidas':'dos pedidos lidos'} bate com os totais impressos nos relatórios.${extraFora}</div>`
+                           : `<div class="faixa erro">⚠ ${prob} total(is) não bate(m) com o relatório.</div>`;
+  return {prob, html: `<p class="exp">Confere se a leitura dos PDFs está certa: para cada empresa, a soma ${NOTAS?'das notas lidas':'dos pedidos lidos'} tem que bater com o total impresso no relatório.</p>` + faixa + `<div class="tabela"><table><tr><th>Empresa</th><th>Vendedor</th><th class="n">Pedidos lidos</th><th class="n">Soma dos pedidos</th><th class="n">Total no relatório</th><th class="n">Diferença</th><th>Situação</th></tr>${linhas}</table></div>` +
+         `<p style="color:var(--sec)">Arquivos lidos: ${d.emps.map(e => esc(e.curta)+' — '+esc(e.arquivo)+' ('+esc(e.periodo)+')').join(' · ')}</p>`};
+}
+
+function setEmp(e){ F.emp = e; est.cli = null; est.vorig = null; desenhar(); }
+function togVend(k){ if(F.vend.has(k)) F.vend.delete(k); else F.vend.add(k); est.cli = null; desenhar(); }
+function limpar(){ F.emp = null; F.vend.clear(); F.busca = ''; F.lic = false; est.cli = null; est.vorig = null; est.menu = false; desenhar(); }
+
+function desenhar(manterBusca){
+  document.getElementById('areas').innerHTML = AREAS.length > 1
+    ? AREAS.map((a,i) => `<span class="ar ${i===areaAtual?'on':''}" onclick="trocarArea(${i})">${esc(a.titulo.replace('Painel de ',''))}</span>`).join('')
+    : esc(AREAS[0].titulo);
+  const conf = conferencia(D.empresas);
+  document.getElementById('abas').innerHTML = ['Painel','Sala de Vendas','Conferência'].map((a,i) => `<button class="${i===est.aba?'on':''}" onclick="est.aba=${i};est.menu=false;est.smenu=false;est.cli=null;est.vorig=null;desenhar()">${a}</button>`).join('');
+  const selo = document.getElementById('selo');
+  selo.hidden = false; selo.className = 'selo ' + (conf.prob ? 'erro' : 'ok');
+  selo.textContent = conf.prob ? `⚠ ${conf.prob} total(is) não bate(m)` : '✓ tudo confere';
+  selo.title = EMP.join(' + ') + (D.gerado ? '\ngerado em ' + D.gerado : '') + '\nclique para abrir a Conferência';
+  selo.onclick = () => { est.aba = 2; desenhar(); };
+  const per = [...new Set(D.empresas.map(e => e.periodo).filter(Boolean))], perAnt = [...new Set((D.anteriores||[]).map(e => e.periodo).filter(Boolean))];
+  document.getElementById('sub').textContent = [per.length ? 'Período ' + per.join(' / ') : '', perAnt.length ? '▲▼ comparado com ' + COMP_TXT : ''].filter(Boolean).join('   ·   ');
+  const al = document.getElementById('alerta');
+  if(EMP.length > 1 && per.length > 1){ al.hidden = false; al.textContent = '⚠ Atenção: os PDFs têm períodos diferentes — ' + D.empresas.map(e => e.curta + ' ' + e.periodo).join('  ·  '); } else al.hidden = true;
+  const painelHtml = () => filtros() + hero() + corpo();
+  document.getElementById('conteudo').innerHTML = est.aba === 0 ? painelHtml()
+    : est.aba === 1 ? comSala(geral => faixaSala(geral) + (SALA.size ? painelHtml() : ''))
+    : conf.html;
+  if(manterBusca){ const b = document.getElementById('busca'); if(b){ b.focus(); b.setSelectionRange(b.value.length, b.value.length); } }
+}
+document.addEventListener('click', e => { if((est.menu || est.smenu) && !e.target.closest('.vsel')){ est.menu = false; est.smenu = false; desenhar(); } });
+usarArea(Math.min(DADOS.inicial||0, AREAS.length-1));
+desenhar();
+</script>
+</body>
+</html>
